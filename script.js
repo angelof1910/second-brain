@@ -4,25 +4,31 @@ let currentPlanningDate = new Date();
 // Variable globale pour le mode édition des routines
 let editModeRoutines = false;
 
+// Dès que le DOM est chargé
 document.addEventListener("DOMContentLoaded", () => {
   updateStatsCard();
   updateTipCard();
   updateEventsCard();
   setActivePage('home');
   
-  // Navigation
+  // Navigation : on a retiré le bouton "Planning" dans l'index.html
   document.querySelectorAll(".nav-button").forEach(button => {
     button.addEventListener("click", () => {
       setActivePage(button.dataset.page);
     });
   });
   
-  // Carte Statistiques -> Page stats
+  // Clic sur la carte Statistiques -> Page stats
   document.getElementById("statsCard").addEventListener("click", () => {
     setActivePage("stats");
   });
   
-  // Réinitialisation des données
+  // Clic sur la carte Événements -> Page planning
+  document.getElementById("eventsCard").addEventListener("click", () => {
+    setActivePage("planning");
+  });
+  
+  // Bouton de réinitialisation des données
   document.getElementById("resetDataBtn").addEventListener("click", () => {
     if (confirm("Êtes-vous sûr de vouloir réinitialiser les données ?")) {
       localStorage.clear();
@@ -34,11 +40,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-/* ----------------- Dashboard : Statistiques / Tip / Events ----------------- */
+/* ----------------- Dashboard : Statistiques, Astuce, Événements ----------------- */
 function updateStatsCard() {
   const statsCard = document.getElementById("statsCard");
   let totalObjectives = JSON.parse(localStorage.getItem("objectives"))?.length || 0;
   let completedRoutines = JSON.parse(localStorage.getItem("routines"))?.filter(r => r.done)?.length || 0;
+  
   statsCard.innerHTML = `<h3>📊 Statistiques</h3>
     <p>Objectifs : ${totalObjectives}</p>
     <p>Routines accomplies : ${completedRoutines}</p>`;
@@ -51,11 +58,13 @@ function updateTipCard() {
 }
 
 function updateEventsCard() {
+  // Le texte sera toujours "Aucun événement" par défaut,
+  // mais on peut y ajouter du code si on veut afficher un résumé du planning.
   document.getElementById("eventsCard").innerHTML = `<h3>📅 Événements</h3>
-    <p>Aucun événement prévu</p>`;
+    <p>Aucun événement</p>`;
 }
 
-/* ----------------- Navigation et affichage du contenu ----------------- */
+/* ----------------- Navigation principale ----------------- */
 function setActivePage(page) {
   const contentDiv = document.getElementById("content");
   let htmlContent = "";
@@ -67,29 +76,16 @@ function setActivePage(page) {
         <form id="objectiveForm">
           <label for="objectiveTitle">Titre de l'objectif :</label>
           <input type="text" id="objectiveTitle" required>
+          
           <label for="objectiveDeadline">Deadline :</label>
           <input type="date" id="objectiveDeadline" required>
+          
           <label for="objectiveTasks">Tâches (séparées par des virgules) :</label>
           <textarea id="objectiveTasks" required></textarea>
+          
           <button type="submit">Ajouter l'objectif</button>
         </form>
         <div id="objectivesList"></div>
-      `;
-      break;
-      
-    case "planning":
-      htmlContent = `
-        <h2>Planning</h2>
-        <div id="calendarHeader">
-          <button id="prevMonth">Précédent</button>
-          <span id="monthYear"></span>
-          <button id="nextMonth">Suivant</button>
-        </div>
-        <div id="calendarContainer"></div>
-        <div id="dayEventsContainer">
-          <h3>Événements du jour</h3>
-          <div id="dayEvents"></div>
-        </div>
       `;
       break;
       
@@ -102,10 +98,9 @@ function setActivePage(page) {
       break;
       
     case "sport":
-      // Ajout du bandeau de tips + formulaire + liste
       htmlContent = `
         <h2>Sport</h2>
-        <div id="sportTipsBanner" class="card" style="margin-bottom: 20px;">
+        <div id="sportTipsBanner" style="margin-bottom:20px;">
           <h3>🩺 Conseils de récupération</h3>
           <p id="sportTip"></p>
         </div>
@@ -137,6 +132,22 @@ function setActivePage(page) {
       `;
       break;
       
+    case "planning":
+      htmlContent = `
+        <h2>Planning</h2>
+        <div id="calendarHeader">
+          <button id="prevMonth">Précédent</button>
+          <span id="monthYear"></span>
+          <button id="nextMonth">Suivant</button>
+        </div>
+        <div id="calendarContainer"></div>
+        <div id="dayEventsContainer">
+          <h3>Événements du jour</h3>
+          <div id="dayEvents"></div>
+        </div>
+      `;
+      break;
+      
     case "stats":
       const totalObjectives = JSON.parse(localStorage.getItem("objectives"))?.length || 0;
       const completedRoutines = JSON.parse(localStorage.getItem("routines"))?.filter(r => r.done)?.length || 0;
@@ -164,24 +175,24 @@ function setActivePage(page) {
   
   contentDiv.innerHTML = htmlContent;
   
-  // Initialiser les pages spécifiques
+  // Initialiser la page correspondante
   if (page === "objectifs") {
     initObjectivePage();
-  } else if (page === "planning") {
-    initPlanningPage();
   } else if (page === "routines") {
     initRoutinesPage();
   } else if (page === "sport") {
     initSportPage();
   } else if (page === "todolist") {
     renderTodoList();
+  } else if (page === "planning") {
+    initPlanningPage();
   }
 }
 
 /* ----------------- Objectifs ----------------- */
 function initObjectivePage() {
   const form = document.getElementById("objectiveForm");
-  form.addEventListener("submit", function(e) {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     const title = document.getElementById("objectiveTitle").value;
     const deadline = document.getElementById("objectiveDeadline").value;
@@ -205,27 +216,32 @@ function initObjectivePage() {
 function renderObjectivesList() {
   const container = document.getElementById("objectivesList");
   let objectives = JSON.parse(localStorage.getItem("objectives")) || [];
+  
   if (objectives.length === 0) {
     container.innerHTML = "<p>Aucun objectif pour le moment.</p>";
     return;
   }
+  
   let html = "";
   objectives.forEach((obj, index) => {
-    html += `<div class="objective-item">
-      <input type="checkbox" class="objective-checkbox" data-index="${index}">
-      <div>
-        <h3>${obj.title}</h3>
-        <p>Deadline : ${obj.deadline}</p>
-        <ul>`;
+    html += `
+      <div class="objective-item">
+        <input type="checkbox" class="objective-checkbox" data-index="${index}">
+        <div>
+          <h3>${obj.title}</h3>
+          <p>Deadline : ${obj.deadline}</p>
+          <ul>`;
     obj.tasks.forEach(task => {
       html += `<li>${task}</li>`;
     });
     html += `</ul>
+        </div>
       </div>
-    </div>`;
+    `;
   });
   container.innerHTML = html;
   
+  // Suppression d'un objectif
   document.querySelectorAll(".objective-checkbox").forEach(chk => {
     chk.addEventListener("change", function() {
       if (this.checked && confirm("Objectif réalisé ?")) {
@@ -241,43 +257,301 @@ function renderObjectivesList() {
   });
 }
 
-/* ----------------- To-Do List ----------------- */
-function renderTodoList() {
-  const container = document.getElementById("todoListContainer");
-  let objectives = JSON.parse(localStorage.getItem("objectives")) || [];
-  
-  let html = "";
-  let taskFound = false;
-  
-  objectives.forEach((obj, objIndex) => {
-    obj.tasks.forEach((task, taskIndex) => {
-      taskFound = true;
-      html += `<div class="todo-item" data-obj-index="${objIndex}" data-task-index="${taskIndex}">
-        <input type="checkbox" class="todo-checkbox">
-        <span>${task}</span>
-      </div>`;
-    });
+/* ----------------- Routines ----------------- */
+function initRoutinesPage() {
+  editModeRoutines = false;
+  document.getElementById("toggleEditRoutines").addEventListener("click", () => {
+    editModeRoutines = !editModeRoutines;
+    renderRoutinesPage();
+    document.getElementById("toggleEditRoutines").textContent =
+      editModeRoutines ? "Quitter le mode modification" : "Modifier routines";
   });
+  renderRoutinesPage();
+}
+
+function getRoutines() {
+  return JSON.parse(localStorage.getItem("routines")) || [];
+}
+
+function saveRoutines(routines) {
+  localStorage.setItem("routines", JSON.stringify(routines));
+}
+
+function resetRoutinesIfNeeded(routines) {
+  const today = new Date().toISOString().split("T")[0];
+  let changed = false;
+  routines.forEach(r => {
+    if (r.lastReset !== today) {
+      r.done = false;
+      r.lastReset = today;
+      changed = true;
+    }
+  });
+  if (changed) {
+    saveRoutines(routines);
+  }
+  return routines;
+}
+
+function renderRoutinesPage() {
+  let allRoutines = getRoutines();
+  allRoutines = resetRoutinesIfNeeded(allRoutines);
+  const container = document.getElementById("routinesContainer");
+  let html = "";
   
-  if (!taskFound) {
-    container.innerHTML = "<p>Aucune tâche en attente.</p>";
-  } else {
+  if (!editModeRoutines) {
+    // Mode utilisation
+    const today = new Date().getDay();
+    const activeRoutines = allRoutines.filter(r => {
+      if (r.done) return false;
+      if (!r.frequency || r.frequency === "every") return true;
+      if (Array.isArray(r.frequency)) return r.frequency.includes(today);
+      return false;
+    });
+    if (activeRoutines.length === 0) {
+      html = "<p>Toutes les routines ont été réalisées pour aujourd'hui.</p>";
+    } else {
+      activeRoutines.forEach(r => {
+        let originalIndex = allRoutines.indexOf(r);
+        html += `
+          <div class="routine-item" data-index="${originalIndex}">
+            <input type="checkbox" class="routine-checkbox">
+            <span>${r.text}</span>
+            <span class="routine-frequency">
+              ${Array.isArray(r.frequency) ? "Certains jours" : "Tous les jours"}
+            </span>
+          </div>
+        `;
+      });
+    }
     container.innerHTML = html;
-    document.querySelectorAll(".todo-checkbox").forEach(chk => {
+    
+    document.querySelectorAll(".routine-checkbox").forEach(chk => {
       chk.addEventListener("change", function() {
-        if (this.checked && confirm("Tâche réalisée ?")) {
+        if (this.checked) {
           const parent = this.parentElement;
-          const objIndex = parseInt(parent.getAttribute("data-obj-index"));
-          const taskIndex = parseInt(parent.getAttribute("data-task-index"));
-          let objectives = JSON.parse(localStorage.getItem("objectives")) || [];
-          objectives[objIndex].tasks.splice(taskIndex, 1);
-          localStorage.setItem("objectives", JSON.stringify(objectives));
-          renderTodoList();
+          const index = parseInt(parent.getAttribute("data-index"));
+          let routines = getRoutines();
+          routines[index].done = true;
+          saveRoutines(routines);
+          renderRoutinesPage();
           updateStatsCard();
         }
       });
     });
+  } else {
+    // Mode modification
+    html += `<div id="routinesEditList">`;
+    if (allRoutines.length === 0) {
+      html += "<p>Aucune routine enregistrée.</p>";
+    } else {
+      allRoutines.forEach((r, index) => {
+        html += `
+          <div class="routine-item" data-index="${index}">
+            <div class="routine-info">
+              <span class="routine-text">${r.text}</span>
+              <span class="routine-frequency">
+                ${Array.isArray(r.frequency)
+                  ? "Certains jours (" + r.frequency.join(",") + ")"
+                  : "Tous les jours"}
+              </span>
+            </div>
+            <div class="routine-actions">
+              <button class="editRoutineBtn small-btn" data-index="${index}">Éditer</button>
+              <button class="deleteRoutineBtn small-btn" data-index="${index}">Supprimer</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+    html += `</div>
+      <h3>Ajouter une routine</h3>
+      <form id="addRoutineForm">
+        <input type="text" id="newRoutineText" placeholder="Texte de la routine" required>
+        
+        <label>Fréquence :</label>
+        <label><input type="radio" name="routineFrequency" value="every" checked> Tous les jours</label>
+        <label><input type="radio" name="routineFrequency" value="custom"> Certains jours</label>
+        
+        <div id="customDays" style="display:none;">
+          <label><input type="checkbox" name="routineDays" value="0"> Dim</label>
+          <label><input type="checkbox" name="routineDays" value="1"> Lun</label>
+          <label><input type="checkbox" name="routineDays" value="2"> Mar</label>
+          <label><input type="checkbox" name="routineDays" value="3"> Mer</label>
+          <label><input type="checkbox" name="routineDays" value="4"> Jeu</label>
+          <label><input type="checkbox" name="routineDays" value="5"> Ven</label>
+          <label><input type="checkbox" name="routineDays" value="6"> Sam</label>
+        </div>
+        
+        <button type="submit">Ajouter</button>
+      </form>`;
+    
+    container.innerHTML = html;
+    
+    // Supprimer routine
+    document.querySelectorAll(".deleteRoutineBtn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        const index = parseInt(this.getAttribute("data-index"));
+        let routines = getRoutines();
+        if (confirm("Supprimer cette routine ?")) {
+          routines.splice(index, 1);
+          saveRoutines(routines);
+          renderRoutinesPage();
+          updateStatsCard();
+        }
+      });
+    });
+    // Éditer routine
+    document.querySelectorAll(".editRoutineBtn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        const index = parseInt(this.getAttribute("data-index"));
+        let routines = getRoutines();
+        const newText = prompt("Modifier le texte de la routine :", routines[index].text);
+        if (newText !== null && newText.trim() !== "") {
+          let newFreq = prompt(
+            "Modifier la fréquence de la routine (entrez 'every' pour tous les jours, ou les numéros de jours séparés par des virgules (0=Dim, 1=Lun, ...)) :",
+            Array.isArray(routines[index].frequency)
+              ? routines[index].frequency.join(",")
+              : routines[index].frequency
+          );
+          if (newFreq !== null) {
+            newFreq = newFreq.trim();
+            if (newFreq.toLowerCase() === "every") {
+              routines[index].frequency = "every";
+            } else {
+              let days = newFreq.split(",").map(d => parseInt(d.trim())).filter(d => !isNaN(d));
+              routines[index].frequency = days;
+            }
+            routines[index].text = newText.trim();
+            saveRoutines(routines);
+            renderRoutinesPage();
+            updateStatsCard();
+          }
+        }
+      });
+    });
+    
+    // Ajouter routine
+    document.getElementById("addRoutineForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      let routines = getRoutines();
+      const newText = document.getElementById("newRoutineText").value.trim();
+      let frequency = document.querySelector("input[name='routineFrequency']:checked").value;
+      if (frequency === "custom") {
+        const checkboxes = document.querySelectorAll("input[name='routineDays']:checked");
+        frequency = [];
+        checkboxes.forEach(chk => {
+          frequency.push(parseInt(chk.value));
+        });
+        if (frequency.length === 0) {
+          frequency = "every";
+        }
+      } else {
+        frequency = "every";
+      }
+      if (newText !== "") {
+        routines.push({
+          text: newText,
+          done: false,
+          lastReset: new Date().toISOString().split("T")[0],
+          frequency: frequency
+        });
+        saveRoutines(routines);
+        document.getElementById("newRoutineText").value = "";
+        document.querySelector("input[name='routineFrequency'][value='every']").checked = true;
+        document.getElementById("customDays").style.display = "none";
+        document.querySelectorAll("input[name='routineDays']").forEach(chk => chk.checked = false);
+        renderRoutinesPage();
+        updateStatsCard();
+      }
+    });
+    
+    // Affichage/masquage des jours personnalisés
+    document.querySelectorAll("input[name='routineFrequency']").forEach(radio => {
+      radio.addEventListener("change", function() {
+        if (this.value === "custom") {
+          document.getElementById("customDays").style.display = "block";
+        } else {
+          document.getElementById("customDays").style.display = "none";
+        }
+      });
+    });
   }
+}
+
+/* ----------------- Sport ----------------- */
+function initSportPage() {
+  // Bandeau de tips
+  const sportTips = [
+    "Fais des étirements légers après la séance pour éviter les courbatures.",
+    "Hydrate-toi suffisamment avant et après ta séance.",
+    "Prends un jour de repos si tu ressens une fatigue musculaire importante.",
+    "Écoute ton corps : en cas de douleur persistante, consulte un professionnel.",
+    "N’oublie pas l’échauffement avant et les étirements après la séance."
+  ];
+  document.getElementById("sportTip").textContent =
+    sportTips[Math.floor(Math.random() * sportTips.length)];
+  
+  // Formulaire d'ajout
+  const sportForm = document.getElementById("sportForm");
+  sportForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const date = document.getElementById("sportDate").value;
+    const laps = parseInt(document.getElementById("sportLaps").value) || 0;
+    const time = parseInt(document.getElementById("sportTime").value) || 0;
+    const notes = document.getElementById("sportNotes").value;
+    
+    let sessions = JSON.parse(localStorage.getItem("sport")) || [];
+    sessions.push({ date, laps, time, notes });
+    localStorage.setItem("sport", JSON.stringify(sessions));
+    
+    sportForm.reset();
+    renderSportSessions();
+    updateStatsCard();
+  });
+  
+  renderSportSessions();
+}
+
+function renderSportSessions() {
+  const container = document.getElementById("sportSessionsList");
+  let sessions = JSON.parse(localStorage.getItem("sport")) || [];
+  
+  if (sessions.length === 0) {
+    container.innerHTML = "<p>Aucune séance enregistrée.</p>";
+    return;
+  }
+  
+  let html = "<h3>Historique des séances</h3>";
+  sessions.forEach((s, index) => {
+    html += `
+      <div class="objective-item" style="justify-content: space-between;">
+        <div>
+          <strong>Date :</strong> ${s.date}<br>
+          <strong>Longueurs :</strong> ${s.laps}<br>
+          <strong>Temps :</strong> ${s.time} min<br>
+          <strong>Notes :</strong> ${s.notes || "Aucune"}
+        </div>
+        <button class="small-btn" data-index="${index}" style="align-self: center;">Supprimer</button>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+  
+  // Suppression de séance
+  container.querySelectorAll(".small-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      if (confirm("Supprimer cette séance ?")) {
+        let sessions = JSON.parse(localStorage.getItem("sport")) || [];
+        const idx = parseInt(this.getAttribute("data-index"));
+        sessions.splice(idx, 1);
+        localStorage.setItem("sport", JSON.stringify(sessions));
+        renderSportSessions();
+        updateStatsCard();
+      }
+    });
+  });
 }
 
 /* ----------------- Planning ----------------- */
@@ -300,7 +574,7 @@ function renderCalendar() {
   const year = currentPlanningDate.getFullYear();
   const month = currentPlanningDate.getMonth();
   
-  monthYear.textContent = currentPlanningDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+  monthYear.textContent = currentPlanningDate.toLocaleDateString("fr-FR", { month: 'long', year: 'numeric' });
   
   let table = `<table>
     <thead>
@@ -414,77 +688,7 @@ function addPlanningEvent(date, time, title, place, notes) {
   localStorage.setItem("planningEvents", JSON.stringify(events));
 }
 
-/* ----------------- Sport ----------------- */
-function initSportPage() {
-  // Bandeau de tips : au hasard parmi un tableau d'astuces
-  const sportTips = [
-    "Fais des étirements légers après la séance pour éviter les courbatures.",
-    "Hydrate-toi suffisamment avant et après ta séance.",
-    "Prends un jour de repos si tu ressens une fatigue musculaire importante.",
-    "Écoute ton corps : en cas de douleur persistante, consulte un professionnel.",
-    "N’oublie pas l’échauffement avant et les étirements après la séance."
-  ];
-  document.getElementById("sportTip").textContent =
-    sportTips[Math.floor(Math.random() * sportTips.length)];
-  
-  // Gestion du formulaire
-  const sportForm = document.getElementById("sportForm");
-  sportForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const date = document.getElementById("sportDate").value;
-    const laps = parseInt(document.getElementById("sportLaps").value) || 0;
-    const time = parseInt(document.getElementById("sportTime").value) || 0;
-    const notes = document.getElementById("sportNotes").value;
-    
-    let sessions = JSON.parse(localStorage.getItem("sport")) || [];
-    sessions.push({ date, laps, time, notes });
-    localStorage.setItem("sport", JSON.stringify(sessions));
-    
-    sportForm.reset();
-    renderSportSessions();
-    updateStatsCard();
-  });
-  
-  renderSportSessions();
-}
-
-function renderSportSessions() {
-  const container = document.getElementById("sportSessionsList");
-  let sessions = JSON.parse(localStorage.getItem("sport")) || [];
-  
-  if (sessions.length === 0) {
-    container.innerHTML = "<p>Aucune séance enregistrée.</p>";
-    return;
-  }
-  
-  let html = "<h3>Historique des séances</h3>";
-  sessions.forEach((s, index) => {
-    html += `
-      <div class="objective-item" style="justify-content: space-between;">
-        <div>
-          <strong>Date :</strong> ${s.date}<br>
-          <strong>Longueurs :</strong> ${s.laps}<br>
-          <strong>Temps :</strong> ${s.time} min<br>
-          <strong>Notes :</strong> ${s.notes || "Aucune"}
-        </div>
-        <button class="small-btn" data-index="${index}" style="align-self: center;">Supprimer</button>
-      </div>
-    `;
-  });
-  
-  container.innerHTML = html;
-  
-  // Suppression de séance
-  container.querySelectorAll(".small-btn").forEach(btn => {
-    btn.addEventListener("click", function() {
-      if (confirm("Supprimer cette séance ?")) {
-        let sessions = JSON.parse(localStorage.getItem("sport")) || [];
-        const idx = parseInt(this.getAttribute("data-index"));
-        sessions.splice(idx, 1);
-        localStorage.setItem("sport", JSON.stringify(sessions));
-        renderSportSessions();
-        updateStatsCard();
-      }
-    });
-  });
+/* ----------------- Autres ----------------- */
+function updateStatsCard() {
+  // Déjà défini en haut, si besoin d'y revenir
 }
