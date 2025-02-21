@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Second Brain</title>
+  <link href="styles.css" rel="stylesheet">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <!-- Barre de navigation supérieure -->
+  <div class="top-bar" onclick="setActivePage('home')">
+    Second Brain
+  </div>
+
+  <!-- Dashboard principal -->
+  <div id="dashboard">
+    <div class="dashboard-top-section">
+      <!-- Carte Statistiques -->
+      <div class="card" id="statsCard">
+        <h3>📊 Statistiques</h3>
+        <p>Aucune donnée disponible</p>
+      </div>
+      <!-- Carte Astuce du jour -->
+      <div class="card" id="tipCard">
+        <h3>💡 Astuce</h3>
+        <p>Chargement...</p>
+      </div>
+      <!-- Carte Événements à venir -->
+      <div class="card" id="eventsCard">
+        <h3>📅 Événements</h3>
+        <p>Aucun événement</p>
+      </div>
+    </div>
+
+    <!-- Menu de navigation -->
+    <div class="dashboard-bottom-section">
+      <div class="bottom-grid">
+        <button class="nav-button" data-page="objectifs">🎯 OBJECTIFS</button>
+        <button class="nav-button" data-page="planning">📅 PLANNING</button>
+        <button class="nav-button" data-page="routines">✅ ROUTINES</button>
+        <button class="nav-button" data-page="sport">🏋️ SPORT</button>
+        <button class="nav-button" data-page="todolist">📋 TO-DO LIST</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenu dynamique (sera mis à jour selon la navigation) -->
+  <div id="content"></div>
+
+  <!-- Modal d'ajout d'événement pour le planning -->
+  <div id="eventModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <h2>Ajouter un événement</h2>
+      <form id="eventForm">
+        <input type="hidden" id="eventDate">
+        <label for="eventTime">Heure :</label>
+        <input type="time" id="eventTime" required>
+        <label for="eventPlace">Lieu :</label>
+        <input type="text" id="eventPlace" placeholder="Lieu">
+        <label for="eventTitle">Titre :</label>
+        <input type="text" id="eventTitle" required>
+        <label for="eventNotes">Notes :</label>
+        <textarea id="eventNotes"></textarea>
+        <button type="submit">Ajouter l'événement</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bouton de réinitialisation des données -->
+  <button class="reset-btn" id="resetDataBtn">🔄 Réinitialiser les données</button>
+</body>
+</html>
