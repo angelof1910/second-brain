@@ -10,19 +10,28 @@ document.addEventListener("DOMContentLoaded", () => {
   updateEventsCard();
   setActivePage('home');
   
-  // Navigation pour tous les boutons
+  // Navigation (click et touchend pour mobile)
   document.querySelectorAll(".nav-button").forEach(button => {
     button.addEventListener("click", () => {
       setActivePage(button.dataset.page);
     });
+    button.addEventListener("touchend", () => {
+      setActivePage(button.dataset.page);
+    });
   });
   
-  // Clic sur la carte Statistiques -> ouvre la page stats
-  document.getElementById("statsCard").addEventListener("click", () => {
-    setActivePage("stats");
-  });
+  // Statistiques -> Page stats
+  const statsCard = document.getElementById("statsCard");
+  if (statsCard) {
+    statsCard.addEventListener("click", () => {
+      setActivePage("stats");
+    });
+    statsCard.addEventListener("touchend", () => {
+      setActivePage("stats");
+    });
+  }
   
-  // Clic ET touchend sur la carte Événements -> ouvre la page planning
+  // Événements -> Ouvrir Planning (click et touchend)
   const eventsCard = document.getElementById("eventsCard");
   if (eventsCard) {
     eventsCard.addEventListener("click", () => {
@@ -33,16 +42,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  // Réinitialisation des données
-  document.getElementById("resetDataBtn").addEventListener("click", () => {
-    if (confirm("Êtes-vous sûr de vouloir réinitialiser les données ?")) {
-      localStorage.clear();
-      updateStatsCard();
-      updateTipCard();
-      updateEventsCard();
-      setActivePage('home');
-    }
-  });
+  // Bouton de réinitialisation des données
+  const resetBtn = document.getElementById("resetDataBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Êtes-vous sûr de vouloir réinitialiser les données ?")) {
+        localStorage.clear();
+        updateStatsCard();
+        updateTipCard();
+        updateEventsCard();
+        setActivePage('home');
+      }
+    });
+  }
 });
 
 /* ----------------- Dashboard ----------------- */
@@ -67,7 +79,7 @@ function updateEventsCard() {
     <p>Aucun événement</p>`;
 }
 
-/* ----------------- Navigation ----------------- */
+/* ----------------- Navigation principale ----------------- */
 function setActivePage(page) {
   const contentDiv = document.getElementById("content");
   let htmlContent = "";
@@ -169,7 +181,7 @@ function setActivePage(page) {
   
   contentDiv.innerHTML = htmlContent;
   
-  // Initialiser la page correspondante
+  // Initialisation des pages spécifiques
   if (page === "objectifs") {
     initObjectivePage();
   } else if (page === "routines") {
@@ -252,13 +264,21 @@ function renderObjectivesList() {
 /* ----------------- Routines ----------------- */
 function initRoutinesPage() {
   editModeRoutines = false;
-  document.getElementById("toggleEditRoutines").addEventListener("click", () => {
-    editModeRoutines = !editModeRoutines;
-    renderRoutinesPage();
-    document.getElementById("toggleEditRoutines").textContent =
-      editModeRoutines ? "Quitter le mode modification" : "Modifier routines";
-  });
+  const toggleBtn = document.getElementById("toggleEditRoutines");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", toggleEditRoutines);
+    toggleBtn.addEventListener("touchend", toggleEditRoutines);
+  }
   renderRoutinesPage();
+}
+
+function toggleEditRoutines() {
+  editModeRoutines = !editModeRoutines;
+  renderRoutinesPage();
+  const toggleBtn = document.getElementById("toggleEditRoutines");
+  if (toggleBtn) {
+    toggleBtn.textContent = editModeRoutines ? "Quitter le mode modification" : "Modifier routines";
+  }
 }
 
 function getRoutines() {
@@ -398,7 +418,7 @@ function renderRoutinesPage() {
         const newText = prompt("Modifier le texte de la routine :", routines[index].text);
         if (newText !== null && newText.trim() !== "") {
           let newFreq = prompt(
-            "Modifier la fréquence de la routine (entrez 'every' pour tous les jours, ou les numéros de jours séparés par des virgules, ex: 0,2,4) :",
+            "Modifier la fréquence (entrez 'every' pour tous les jours, ou les numéros de jours séparés par des virgules, ex: 0,2,4) :",
             Array.isArray(routines[index].frequency)
               ? routines[index].frequency.join(",")
               : routines[index].frequency
@@ -470,7 +490,6 @@ function renderRoutinesPage() {
 
 /* ----------------- Sport ----------------- */
 function initSportPage() {
-  // Bandeau de tips
   const sportTips = [
     "Fais des étirements légers après la séance pour éviter les courbatures.",
     "Hydrate-toi suffisamment avant et après ta séance.",
@@ -481,7 +500,6 @@ function initSportPage() {
   document.getElementById("sportTip").textContent =
     sportTips[Math.floor(Math.random() * sportTips.length)];
   
-  // Formulaire d'ajout de séance
   const sportForm = document.getElementById("sportForm");
   sportForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -528,7 +546,6 @@ function renderSportSessions() {
   
   container.innerHTML = html;
   
-  // Suppression d'une séance
   container.querySelectorAll(".small-btn").forEach(btn => {
     btn.addEventListener("click", function() {
       if (confirm("Supprimer cette séance ?")) {
