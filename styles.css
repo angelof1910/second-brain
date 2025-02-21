@@ -180,6 +180,7 @@ form button:hover {
   gap: 8px;
 }
 
+/* Bouton "Modifier routines" */
 .routines-btn {
   background-color: #008CBA;
   border-radius: 8px;
@@ -197,6 +198,7 @@ form button:hover {
   transform: translateY(-3px);
 }
 
+/* Boutons "Éditer" et "Supprimer" en plus petit */
 .small-btn {
   background-color: #008CBA;
   border-radius: 6px;
@@ -257,7 +259,7 @@ form button:hover {
 
 /* ===================== MODAL ===================== */
 .modal {
-  display: none;
+  display: none; /* caché par défaut */
   position: fixed;
   z-index: 100;
   left: 0;
@@ -289,4 +291,61 @@ form button:hover {
 .close:focus {
   color: black;
   cursor: pointer;
+}
+
+/* ===================== SPORT ===================== */
+#sportTipsBanner {
+  background-color: #e0f7fa;
+  border: 1px solid #b2ebf2;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+#sportTipsBanner h3 {
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+#sportTip {
+  font-size: 14px;
+  color: #00796b;
+}
+
+/* ===================== MEDIA QUERIES (MOBILE) ===================== */
+@media (max-width: 600px) {
+  body {
+    padding: 10px;
+  }
+  
+  #dashboard, #content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 10px;
+  }
+  
+  .top-bar {
+    font-size: 20px;
+    padding: 15px;
+  }
+  
+  .nav-button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .dashboard-top-section {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  form input, form textarea, form button {
+    font-size: 14px;
+    padding: 6px;
+  }
+  
+  #sportTipsBanner {
+    padding: 10px;
+    font-size: 14px;
+  }
 }
