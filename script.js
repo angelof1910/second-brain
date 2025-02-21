@@ -9,28 +9,28 @@ document.addEventListener("DOMContentLoaded", () => {
   updateTipCard();
   updateEventsCard();
   setActivePage('home');
-  
+
   // Navigation (click et touchend pour mobile)
   document.querySelectorAll(".nav-button").forEach(button => {
     button.addEventListener("click", () => setActivePage(button.dataset.page));
     button.addEventListener("touchend", () => setActivePage(button.dataset.page));
   });
-  
+
   // Statistiques -> Page stats
   const statsCard = document.getElementById("statsCard");
   if (statsCard) {
     statsCard.addEventListener("click", () => setActivePage("stats"));
     statsCard.addEventListener("touchend", () => setActivePage("stats"));
   }
-  
-  // Événements -> Ouvre Planning (click et touchend)
+
+  // Événements -> Ouvrir Planning (click et touchend)
   const eventsCard = document.getElementById("eventsCard");
   if (eventsCard) {
     eventsCard.addEventListener("click", () => setActivePage("planning"));
     eventsCard.addEventListener("touchend", () => setActivePage("planning"));
   }
-  
-  // Réinitialisation des données
+
+  // Bouton de réinitialisation
   const resetBtn = document.getElementById("resetDataBtn");
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
@@ -158,7 +158,6 @@ function setActivePage(page) {
       `;
       break;
   }
-  
   contentDiv.innerHTML = htmlContent;
   
   if (page === "objectifs") {
@@ -177,8 +176,6 @@ function setActivePage(page) {
 /* ----------------- Objectifs ----------------- */
 function initObjectivePage() {
   const form = document.getElementById("objectiveForm");
-  
-  // Ajout des écouteurs click et touchend pour la soumission
   const submitObjective = (e) => {
     e.preventDefault();
     const title = document.getElementById("objectiveTitle").value;
@@ -186,11 +183,16 @@ function initObjectivePage() {
     const tasksRaw = document.getElementById("objectiveTasks").value;
     const tasks = tasksRaw.split(",").map(t => t.trim()).filter(t => t !== "");
     
+    if (!deadline) {
+      alert("Veuillez entrer une date de deadline valide.");
+      return;
+    }
+    
     let objectives = JSON.parse(localStorage.getItem("objectives")) || [];
     objectives.push({ title, deadline, tasks });
     localStorage.setItem("objectives", JSON.stringify(objectives));
     
-    // Ajout automatique d'un événement dans le planning
+    // Création de l'événement dans le planning à partir de la deadline
     addPlanningEvent(deadline, "00:00", "Deadline: " + title, "", "Objectif ajouté automatiquement");
     
     form.reset();
@@ -200,8 +202,7 @@ function initObjectivePage() {
   };
   
   form.addEventListener("submit", submitObjective);
-  form.addEventListener("touchend", submitObjective);
-  
+  // Pour mobile, évitez de dupliquer l'événement afin d'éviter un double envoi.
   renderObjectivesList();
 }
 
@@ -240,6 +241,43 @@ function renderObjectivesList() {
         objectives.splice(index, 1);
         localStorage.setItem("objectives", JSON.stringify(objectives));
         renderObjectivesList();
+        renderTodoList();
+        updateStatsCard();
+      }
+    });
+  });
+}
+
+/* ----------------- To-Do List ----------------- */
+function renderTodoList() {
+  const container = document.getElementById("todoListContainer");
+  let objectives = JSON.parse(localStorage.getItem("objectives")) || [];
+  
+  let html = "";
+  let taskFound = false;
+  objectives.forEach((obj, objIndex) => {
+    obj.tasks.forEach((task, taskIndex) => {
+      taskFound = true;
+      html += `
+        <div class="todo-item" data-obj-index="${objIndex}" data-task-index="${taskIndex}">
+          <input type="checkbox" class="todo-checkbox">
+          <span>${task}</span>
+        </div>
+      `;
+    });
+  });
+  
+  container.innerHTML = taskFound ? html : "<p>Aucune tâche en attente.</p>";
+  
+  document.querySelectorAll(".todo-checkbox").forEach(chk => {
+    chk.addEventListener("change", function() {
+      if (this.checked && confirm("Tâche réalisée ?")) {
+        const parent = this.parentElement;
+        const objIndex = parseInt(parent.getAttribute("data-obj-index"));
+        const taskIndex = parseInt(parent.getAttribute("data-task-index"));
+        let objectives = JSON.parse(localStorage.getItem("objectives")) || [];
+        objectives[objIndex].tasks.splice(taskIndex, 1);
+        localStorage.setItem("objectives", JSON.stringify(objectives));
         renderTodoList();
         updateStatsCard();
       }
@@ -343,7 +381,9 @@ function renderRoutinesPage() {
             <div class="routine-info">
               <span class="routine-text">${r.text}</span>
               <span class="routine-frequency">
-                ${Array.isArray(r.frequency) ? "Certains jours (" + r.frequency.join(",") + ")" : "Tous les jours"}
+                ${Array.isArray(r.frequency)
+                  ? "Certains jours (" + r.frequency.join(",") + ")"
+                  : "Tous les jours"}
               </span>
             </div>
             <div class="routine-actions">
