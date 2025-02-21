@@ -4,31 +4,36 @@ let currentPlanningDate = new Date();
 // Variable globale pour le mode édition des routines
 let editModeRoutines = false;
 
-// Dès que le DOM est chargé
 document.addEventListener("DOMContentLoaded", () => {
   updateStatsCard();
   updateTipCard();
   updateEventsCard();
   setActivePage('home');
   
-  // Navigation : on a retiré le bouton "Planning" dans l'index.html
+  // Navigation pour tous les boutons
   document.querySelectorAll(".nav-button").forEach(button => {
     button.addEventListener("click", () => {
       setActivePage(button.dataset.page);
     });
   });
   
-  // Clic sur la carte Statistiques -> Page stats
+  // Clic sur la carte Statistiques -> ouvre la page stats
   document.getElementById("statsCard").addEventListener("click", () => {
     setActivePage("stats");
   });
   
-  // Clic sur la carte Événements -> Page planning
-  document.getElementById("eventsCard").addEventListener("click", () => {
-    setActivePage("planning");
-  });
+  // Clic ET touchend sur la carte Événements -> ouvre la page planning
+  const eventsCard = document.getElementById("eventsCard");
+  if (eventsCard) {
+    eventsCard.addEventListener("click", () => {
+      setActivePage("planning");
+    });
+    eventsCard.addEventListener("touchend", () => {
+      setActivePage("planning");
+    });
+  }
   
-  // Bouton de réinitialisation des données
+  // Réinitialisation des données
   document.getElementById("resetDataBtn").addEventListener("click", () => {
     if (confirm("Êtes-vous sûr de vouloir réinitialiser les données ?")) {
       localStorage.clear();
@@ -40,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-/* ----------------- Dashboard : Statistiques, Astuce, Événements ----------------- */
+/* ----------------- Dashboard ----------------- */
 function updateStatsCard() {
   const statsCard = document.getElementById("statsCard");
   let totalObjectives = JSON.parse(localStorage.getItem("objectives"))?.length || 0;
@@ -58,13 +63,11 @@ function updateTipCard() {
 }
 
 function updateEventsCard() {
-  // Le texte sera toujours "Aucun événement" par défaut,
-  // mais on peut y ajouter du code si on veut afficher un résumé du planning.
   document.getElementById("eventsCard").innerHTML = `<h3>📅 Événements</h3>
     <p>Aucun événement</p>`;
 }
 
-/* ----------------- Navigation principale ----------------- */
+/* ----------------- Navigation ----------------- */
 function setActivePage(page) {
   const contentDiv = document.getElementById("content");
   let htmlContent = "";
@@ -76,13 +79,10 @@ function setActivePage(page) {
         <form id="objectiveForm">
           <label for="objectiveTitle">Titre de l'objectif :</label>
           <input type="text" id="objectiveTitle" required>
-          
           <label for="objectiveDeadline">Deadline :</label>
           <input type="date" id="objectiveDeadline" required>
-          
           <label for="objectiveTasks">Tâches (séparées par des virgules) :</label>
           <textarea id="objectiveTasks" required></textarea>
-          
           <button type="submit">Ajouter l'objectif</button>
         </form>
         <div id="objectivesList"></div>
@@ -100,27 +100,21 @@ function setActivePage(page) {
     case "sport":
       htmlContent = `
         <h2>Sport</h2>
-        <div id="sportTipsBanner" style="margin-bottom:20px;">
+        <div id="sportTipsBanner">
           <h3>🩺 Conseils de récupération</h3>
           <p id="sportTip"></p>
         </div>
-        
         <form id="sportForm">
           <label for="sportDate">Date :</label>
           <input type="date" id="sportDate" required>
-          
           <label for="sportLaps">Nombre de longueurs :</label>
           <input type="number" id="sportLaps" min="0" required>
-          
           <label for="sportTime">Temps de nage (en minutes) :</label>
           <input type="number" id="sportTime" min="0" required>
-          
           <label for="sportNotes">Notes :</label>
           <textarea id="sportNotes"></textarea>
-          
           <button type="submit">Enregistrer la séance</button>
         </form>
-        
         <div id="sportSessionsList"></div>
       `;
       break;
@@ -216,7 +210,6 @@ function initObjectivePage() {
 function renderObjectivesList() {
   const container = document.getElementById("objectivesList");
   let objectives = JSON.parse(localStorage.getItem("objectives")) || [];
-  
   if (objectives.length === 0) {
     container.innerHTML = "<p>Aucun objectif pour le moment.</p>";
     return;
@@ -241,7 +234,6 @@ function renderObjectivesList() {
   });
   container.innerHTML = html;
   
-  // Suppression d'un objectif
   document.querySelectorAll(".objective-checkbox").forEach(chk => {
     chk.addEventListener("change", function() {
       if (this.checked && confirm("Objectif réalisé ?")) {
@@ -300,7 +292,7 @@ function renderRoutinesPage() {
   let html = "";
   
   if (!editModeRoutines) {
-    // Mode utilisation
+    // Mode utilisation : afficher uniquement les routines actives pour aujourd'hui
     const today = new Date().getDay();
     const activeRoutines = allRoutines.filter(r => {
       if (r.done) return false;
@@ -368,11 +360,9 @@ function renderRoutinesPage() {
       <h3>Ajouter une routine</h3>
       <form id="addRoutineForm">
         <input type="text" id="newRoutineText" placeholder="Texte de la routine" required>
-        
         <label>Fréquence :</label>
         <label><input type="radio" name="routineFrequency" value="every" checked> Tous les jours</label>
         <label><input type="radio" name="routineFrequency" value="custom"> Certains jours</label>
-        
         <div id="customDays" style="display:none;">
           <label><input type="checkbox" name="routineDays" value="0"> Dim</label>
           <label><input type="checkbox" name="routineDays" value="1"> Lun</label>
@@ -382,13 +372,12 @@ function renderRoutinesPage() {
           <label><input type="checkbox" name="routineDays" value="5"> Ven</label>
           <label><input type="checkbox" name="routineDays" value="6"> Sam</label>
         </div>
-        
         <button type="submit">Ajouter</button>
       </form>`;
     
     container.innerHTML = html;
     
-    // Supprimer routine
+    // Boutons Supprimer
     document.querySelectorAll(".deleteRoutineBtn").forEach(btn => {
       btn.addEventListener("click", function() {
         const index = parseInt(this.getAttribute("data-index"));
@@ -401,7 +390,7 @@ function renderRoutinesPage() {
         }
       });
     });
-    // Éditer routine
+    // Boutons Éditer
     document.querySelectorAll(".editRoutineBtn").forEach(btn => {
       btn.addEventListener("click", function() {
         const index = parseInt(this.getAttribute("data-index"));
@@ -409,7 +398,7 @@ function renderRoutinesPage() {
         const newText = prompt("Modifier le texte de la routine :", routines[index].text);
         if (newText !== null && newText.trim() !== "") {
           let newFreq = prompt(
-            "Modifier la fréquence de la routine (entrez 'every' pour tous les jours, ou les numéros de jours séparés par des virgules (0=Dim, 1=Lun, ...)) :",
+            "Modifier la fréquence de la routine (entrez 'every' pour tous les jours, ou les numéros de jours séparés par des virgules, ex: 0,2,4) :",
             Array.isArray(routines[index].frequency)
               ? routines[index].frequency.join(",")
               : routines[index].frequency
@@ -431,7 +420,7 @@ function renderRoutinesPage() {
       });
     });
     
-    // Ajouter routine
+    // Formulaire d'ajout de routine
     document.getElementById("addRoutineForm").addEventListener("submit", function(e) {
       e.preventDefault();
       let routines = getRoutines();
@@ -492,7 +481,7 @@ function initSportPage() {
   document.getElementById("sportTip").textContent =
     sportTips[Math.floor(Math.random() * sportTips.length)];
   
-  // Formulaire d'ajout
+  // Formulaire d'ajout de séance
   const sportForm = document.getElementById("sportForm");
   sportForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -539,7 +528,7 @@ function renderSportSessions() {
   
   container.innerHTML = html;
   
-  // Suppression de séance
+  // Suppression d'une séance
   container.querySelectorAll(".small-btn").forEach(btn => {
     btn.addEventListener("click", function() {
       if (confirm("Supprimer cette séance ?")) {
@@ -686,9 +675,4 @@ function addPlanningEvent(date, time, title, place, notes) {
   let events = JSON.parse(localStorage.getItem("planningEvents")) || [];
   events.push({ date, time, title, place, notes });
   localStorage.setItem("planningEvents", JSON.stringify(events));
-}
-
-/* ----------------- Autres ----------------- */
-function updateStatsCard() {
-  // Déjà défini en haut, si besoin d'y revenir
 }
