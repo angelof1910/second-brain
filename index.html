@@ -26,14 +26,14 @@
         <h3>💡 Astuce</h3>
         <p>Chargement...</p>
       </div>
-      <!-- Carte Événements -->
+      <!-- Carte Événements (ouvre Planning) -->
       <div class="card" id="eventsCard">
         <h3>📅 Événements</h3>
         <p>Aucun événement</p>
       </div>
     </div>
 
-    <!-- Menu de navigation : on retire le bouton Planning -->
+    <!-- Menu de navigation : on retire la dalle Planning -->
     <div class="dashboard-bottom-section">
       <div class="bottom-grid">
         <button class="nav-button" data-page="objectifs">🎯 OBJECTIFS</button>
@@ -44,7 +44,7 @@
     </div>
   </div>
 
-  <!-- Contenu dynamique -->
+  <!-- Contenu dynamique (sera mis à jour selon la navigation) -->
   <div id="content"></div>
 
   <!-- Modal d'ajout d'événement pour le planning -->
@@ -56,12 +56,16 @@
         <input type="hidden" id="eventDate">
         <label for="eventTime">Heure :</label>
         <input type="time" id="eventTime" required>
+        
         <label for="eventPlace">Lieu :</label>
         <input type="text" id="eventPlace" placeholder="Lieu">
+        
         <label for="eventTitle">Titre :</label>
         <input type="text" id="eventTitle" required>
+        
         <label for="eventNotes">Notes :</label>
         <textarea id="eventNotes"></textarea>
+        
         <button type="submit">Ajouter l'événement</button>
       </form>
     </div>
