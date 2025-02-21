@@ -73,9 +73,16 @@ body {
   justify-content: center;
 }
 
+/* 
+   On passe en grid pour afficher les 4 dalles
+   en 2 lignes de 2.
+*/
 .bottom-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+  max-width: 400px; 
+  margin: 0 auto;
 }
 
 .nav-button {
@@ -180,7 +187,6 @@ form button:hover {
   gap: 8px;
 }
 
-/* Bouton "Modifier routines" */
 .routines-btn {
   background-color: #008CBA;
   border-radius: 8px;
@@ -259,7 +265,7 @@ form button:hover {
 
 /* ===================== MODAL ===================== */
 .modal {
-  display: none; /* caché par défaut */
+  display: none;
   position: fixed;
   z-index: 100;
   left: 0;
@@ -329,14 +335,14 @@ form button:hover {
     padding: 15px;
   }
   
-  .nav-button {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-  
   .dashboard-top-section {
     flex-direction: column;
     gap: 15px;
+  }
+  
+  .nav-button {
+    padding: 8px 12px;
+    font-size: 14px;
   }
   
   form input, form textarea, form button {
