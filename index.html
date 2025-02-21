@@ -2,14 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <!-- INDISPENSABLE pour le responsive mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
   <title>Second Brain</title>
-  <!-- Lien vers le fichier CSS -->
   <link href="styles.css" rel="stylesheet">
-  
-  <!-- Lien vers le script JS -->
   <script defer src="script.js"></script>
 </head>
 <body>
@@ -31,18 +26,17 @@
         <h3>💡 Astuce</h3>
         <p>Chargement...</p>
       </div>
-      <!-- Carte Événements à venir -->
+      <!-- Carte Événements -->
       <div class="card" id="eventsCard">
         <h3>📅 Événements</h3>
         <p>Aucun événement</p>
       </div>
     </div>
 
-    <!-- Menu de navigation -->
+    <!-- Menu de navigation : on retire le bouton Planning -->
     <div class="dashboard-bottom-section">
       <div class="bottom-grid">
         <button class="nav-button" data-page="objectifs">🎯 OBJECTIFS</button>
-        <button class="nav-button" data-page="planning">📅 PLANNING</button>
         <button class="nav-button" data-page="routines">✅ ROUTINES</button>
         <button class="nav-button" data-page="sport">🏋️ SPORT</button>
         <button class="nav-button" data-page="todolist">📋 TO-DO LIST</button>
@@ -50,7 +44,7 @@
     </div>
   </div>
 
-  <!-- Contenu dynamique (sera mis à jour selon la navigation) -->
+  <!-- Contenu dynamique -->
   <div id="content"></div>
 
   <!-- Modal d'ajout d'événement pour le planning -->
@@ -62,16 +56,12 @@
         <input type="hidden" id="eventDate">
         <label for="eventTime">Heure :</label>
         <input type="time" id="eventTime" required>
-        
         <label for="eventPlace">Lieu :</label>
         <input type="text" id="eventPlace" placeholder="Lieu">
-        
         <label for="eventTitle">Titre :</label>
         <input type="text" id="eventTitle" required>
-        
         <label for="eventNotes">Notes :</label>
         <textarea id="eventNotes"></textarea>
-        
         <button type="submit">Ajouter l'événement</button>
       </form>
     </div>
