@@ -2,9 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <!-- INDISPENSABLE pour le responsive mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
   <title>Second Brain</title>
+  <!-- Lien vers le fichier CSS -->
   <link href="styles.css" rel="stylesheet">
+  
+  <!-- Lien vers le script JS -->
   <script defer src="script.js"></script>
 </head>
 <body>
@@ -57,12 +62,16 @@
         <input type="hidden" id="eventDate">
         <label for="eventTime">Heure :</label>
         <input type="time" id="eventTime" required>
+        
         <label for="eventPlace">Lieu :</label>
         <input type="text" id="eventPlace" placeholder="Lieu">
+        
         <label for="eventTitle">Titre :</label>
         <input type="text" id="eventTitle" required>
+        
         <label for="eventNotes">Notes :</label>
         <textarea id="eventNotes"></textarea>
+        
         <button type="submit">Ajouter l'événement</button>
       </form>
     </div>
