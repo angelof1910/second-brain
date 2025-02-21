@@ -12,37 +12,25 @@ document.addEventListener("DOMContentLoaded", () => {
   
   // Navigation (click et touchend pour mobile)
   document.querySelectorAll(".nav-button").forEach(button => {
-    button.addEventListener("click", () => {
-      setActivePage(button.dataset.page);
-    });
-    button.addEventListener("touchend", () => {
-      setActivePage(button.dataset.page);
-    });
+    button.addEventListener("click", () => setActivePage(button.dataset.page));
+    button.addEventListener("touchend", () => setActivePage(button.dataset.page));
   });
   
   // Statistiques -> Page stats
   const statsCard = document.getElementById("statsCard");
   if (statsCard) {
-    statsCard.addEventListener("click", () => {
-      setActivePage("stats");
-    });
-    statsCard.addEventListener("touchend", () => {
-      setActivePage("stats");
-    });
+    statsCard.addEventListener("click", () => setActivePage("stats"));
+    statsCard.addEventListener("touchend", () => setActivePage("stats"));
   }
   
-  // Événements -> Ouvrir Planning (click et touchend)
+  // Événements -> Ouvre Planning (click et touchend)
   const eventsCard = document.getElementById("eventsCard");
   if (eventsCard) {
-    eventsCard.addEventListener("click", () => {
-      setActivePage("planning");
-    });
-    eventsCard.addEventListener("touchend", () => {
-      setActivePage("planning");
-    });
+    eventsCard.addEventListener("click", () => setActivePage("planning"));
+    eventsCard.addEventListener("touchend", () => setActivePage("planning"));
   }
   
-  // Bouton de réinitialisation des données
+  // Réinitialisation des données
   const resetBtn = document.getElementById("resetDataBtn");
   if (resetBtn) {
     resetBtn.addEventListener("click", () => {
@@ -62,7 +50,6 @@ function updateStatsCard() {
   const statsCard = document.getElementById("statsCard");
   let totalObjectives = JSON.parse(localStorage.getItem("objectives"))?.length || 0;
   let completedRoutines = JSON.parse(localStorage.getItem("routines"))?.filter(r => r.done)?.length || 0;
-  
   statsCard.innerHTML = `<h3>📊 Statistiques</h3>
     <p>Objectifs : ${totalObjectives}</p>
     <p>Routines accomplies : ${completedRoutines}</p>`;
@@ -83,7 +70,6 @@ function updateEventsCard() {
 function setActivePage(page) {
   const contentDiv = document.getElementById("content");
   let htmlContent = "";
-  
   switch (page) {
     case "objectifs":
       htmlContent = `
@@ -100,7 +86,6 @@ function setActivePage(page) {
         <div id="objectivesList"></div>
       `;
       break;
-      
     case "routines":
       htmlContent = `
         <h2>Routines</h2>
@@ -108,7 +93,6 @@ function setActivePage(page) {
         <div id="routinesContainer"></div>
       `;
       break;
-      
     case "sport":
       htmlContent = `
         <h2>Sport</h2>
@@ -130,14 +114,12 @@ function setActivePage(page) {
         <div id="sportSessionsList"></div>
       `;
       break;
-      
     case "todolist":
       htmlContent = `
         <h2>To-Do List</h2>
         <div id="todoListContainer"></div>
       `;
       break;
-      
     case "planning":
       htmlContent = `
         <h2>Planning</h2>
@@ -153,7 +135,6 @@ function setActivePage(page) {
         </div>
       `;
       break;
-      
     case "stats":
       const totalObjectives = JSON.parse(localStorage.getItem("objectives"))?.length || 0;
       const completedRoutines = JSON.parse(localStorage.getItem("routines"))?.filter(r => r.done)?.length || 0;
@@ -169,7 +150,6 @@ function setActivePage(page) {
         </ul>
       `;
       break;
-      
     case "home":
     default:
       htmlContent = `
@@ -181,7 +161,6 @@ function setActivePage(page) {
   
   contentDiv.innerHTML = htmlContent;
   
-  // Initialisation des pages spécifiques
   if (page === "objectifs") {
     initObjectivePage();
   } else if (page === "routines") {
@@ -198,7 +177,9 @@ function setActivePage(page) {
 /* ----------------- Objectifs ----------------- */
 function initObjectivePage() {
   const form = document.getElementById("objectiveForm");
-  form.addEventListener("submit", (e) => {
+  
+  // Ajout des écouteurs click et touchend pour la soumission
+  const submitObjective = (e) => {
     e.preventDefault();
     const title = document.getElementById("objectiveTitle").value;
     const deadline = document.getElementById("objectiveDeadline").value;
@@ -214,8 +195,13 @@ function initObjectivePage() {
     
     form.reset();
     renderObjectivesList();
+    renderTodoList();
     updateStatsCard();
-  });
+  };
+  
+  form.addEventListener("submit", submitObjective);
+  form.addEventListener("touchend", submitObjective);
+  
   renderObjectivesList();
 }
 
@@ -266,19 +252,15 @@ function initRoutinesPage() {
   editModeRoutines = false;
   const toggleBtn = document.getElementById("toggleEditRoutines");
   if (toggleBtn) {
-    toggleBtn.addEventListener("click", toggleEditRoutines);
-    toggleBtn.addEventListener("touchend", toggleEditRoutines);
+    const toggleAction = () => {
+      editModeRoutines = !editModeRoutines;
+      renderRoutinesPage();
+      toggleBtn.textContent = editModeRoutines ? "Quitter le mode modification" : "Modifier routines";
+    };
+    toggleBtn.addEventListener("click", toggleAction);
+    toggleBtn.addEventListener("touchend", toggleAction);
   }
   renderRoutinesPage();
-}
-
-function toggleEditRoutines() {
-  editModeRoutines = !editModeRoutines;
-  renderRoutinesPage();
-  const toggleBtn = document.getElementById("toggleEditRoutines");
-  if (toggleBtn) {
-    toggleBtn.textContent = editModeRoutines ? "Quitter le mode modification" : "Modifier routines";
-  }
 }
 
 function getRoutines() {
@@ -312,7 +294,6 @@ function renderRoutinesPage() {
   let html = "";
   
   if (!editModeRoutines) {
-    // Mode utilisation : afficher uniquement les routines actives pour aujourd'hui
     const today = new Date().getDay();
     const activeRoutines = allRoutines.filter(r => {
       if (r.done) return false;
@@ -352,7 +333,6 @@ function renderRoutinesPage() {
       });
     });
   } else {
-    // Mode modification
     html += `<div id="routinesEditList">`;
     if (allRoutines.length === 0) {
       html += "<p>Aucune routine enregistrée.</p>";
@@ -363,9 +343,7 @@ function renderRoutinesPage() {
             <div class="routine-info">
               <span class="routine-text">${r.text}</span>
               <span class="routine-frequency">
-                ${Array.isArray(r.frequency)
-                  ? "Certains jours (" + r.frequency.join(",") + ")"
-                  : "Tous les jours"}
+                ${Array.isArray(r.frequency) ? "Certains jours (" + r.frequency.join(",") + ")" : "Tous les jours"}
               </span>
             </div>
             <div class="routine-actions">
@@ -397,7 +375,6 @@ function renderRoutinesPage() {
     
     container.innerHTML = html;
     
-    // Boutons Supprimer
     document.querySelectorAll(".deleteRoutineBtn").forEach(btn => {
       btn.addEventListener("click", function() {
         const index = parseInt(this.getAttribute("data-index"));
@@ -410,7 +387,7 @@ function renderRoutinesPage() {
         }
       });
     });
-    // Boutons Éditer
+    
     document.querySelectorAll(".editRoutineBtn").forEach(btn => {
       btn.addEventListener("click", function() {
         const index = parseInt(this.getAttribute("data-index"));
@@ -440,7 +417,6 @@ function renderRoutinesPage() {
       });
     });
     
-    // Formulaire d'ajout de routine
     document.getElementById("addRoutineForm").addEventListener("submit", function(e) {
       e.preventDefault();
       let routines = getRoutines();
@@ -475,7 +451,6 @@ function renderRoutinesPage() {
       }
     });
     
-    // Affichage/masquage des jours personnalisés
     document.querySelectorAll("input[name='routineFrequency']").forEach(radio => {
       radio.addEventListener("change", function() {
         if (this.value === "custom") {
